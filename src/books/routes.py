@@ -5,7 +5,6 @@ from src.books.schemas import Book, BookUpdateModel, BookCreateModel
 from src.books.service import BookService
 from sqlmodel.ext.asyncio.session import AsyncSession
 from src.database.main import get_session
-import uuid
 
 book_router = APIRouter()
 book_service = BookService()
@@ -18,7 +17,7 @@ async def get_all_books(session: AsyncSession = Depends(get_session)):
 
 @book_router.post("/books", status_code= status.HTTP_201_CREATED)
 async def create_a_book(book_data: BookCreateModel, session: AsyncSession = Depends(get_session)) -> dict:
-    new_book = await book_service.create_book(book_data, uuid.uuid4(), session)
+    new_book = await book_service.create_book(book_data, session)
     return new_book.model_dump()
 
 @book_router.get("/books/{book_uid}")

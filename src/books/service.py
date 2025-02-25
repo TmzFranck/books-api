@@ -14,11 +14,10 @@ class BookService:
 
         return result.all()
 
-    async def create_book(self, book_data: BookCreateModel, uid: uuid.UUID, session: AsyncSession):
+    async def create_book(self, book_data: BookCreateModel, session: AsyncSession):
         book_data_dict = book_data.model_dump()
         new_book = Book(**book_data_dict)
-        new_book.published_date = datetime.strptime(book_data_dict['published_date'],"%Y-%m-%d")
-        new_book.uid = uid
+        new_book.published_date = datetime.strptime(book_data_dict['published_date'],"%Y-%m-%d").date()
 
         session.add(new_book)
 
@@ -43,6 +42,8 @@ class BookService:
 
             for key, value in update_data_dict.items():
                 setattr(book_to_update, key, value)
+
+            setattr(book_to_update, "updated_at", datetime.now())
 
             await session.commit()
 
