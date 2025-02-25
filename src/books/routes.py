@@ -1,44 +1,43 @@
 from fastapi.exceptions import HTTPException
-from fastapi import APIRouter, status
+from fastapi import APIRouter, status, Depends
 from typing import List
-from src.books.schemas import Book, BookUpdateModel
-from src.books.book_data import books
+from src.books.schemas import Book, BookUpdateModel, BookCreateModel
+from src.books.service import BookService
+from sqlmodel.ext.asyncio.session import AsyncSession
+from src.database.main import get_session
+import uuid
 
 book_router = APIRouter()
+book_service = BookService()
 
 @book_router.get("/books", response_model=List[Book])
-async def get_all_books() -> List[dict]:
+async def get_all_books(session: AsyncSession = Depends(get_session)):
+    books = await book_service.get_all_books(session)
     return books
 
+
 @book_router.post("/books", status_code= status.HTTP_201_CREATED)
-async def create_a_book(book_data: Book) -> dict:
-    new_book = book_data.model_dump()
-    books.append(new_book)
-    return new_book
+async def create_a_book(book_data: BookCreateModel, session: AsyncSession = Depends(get_session)) -> dict:
+    new_book = await book_service.create_book(book_data, uuid.uuid4(), session)
+    return new_book.model_dump()
 
-@book_router.get("/books/{book_id}")
-async def get_book(book_id: int) -> dict:
-    for book in books:
-        if book["id"] == book_id:
-            return book
+@book_router.get("/books/{book_uid}")
+async def get_book(book_uid: str, session: AsyncSession = Depends(get_session)) -> dict:
+    book = await book_service.get_book(book_uid, session)
+    if book:
+        return book.model_dump()
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Book not found")
 
-@book_router.patch("/book/{book_id}")
-async def update_book(book_id: int, book_data: BookUpdateModel) -> dict:
-    for book in books:
-        if book["id"] == book_id:
-            book["title"] = book_data.title
-            book["author"] = book_data.author
-            book["publisher"] = book_data.publisher
-            book["language"] = book_data.language
-            return book
+@book_router.patch("/book/{book_uid}")
+async def update_book(book_uid: str, book_update_data: BookUpdateModel, session: AsyncSession = Depends(get_session)) -> dict:
+    book = await book_service.update_book(book_uid, book_update_data, session)
+    if book:
+        return book.model_dump()
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Book not found")
 
-@book_router.delete("/book/{book_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_book(book_id: int):
-    for book in books:
-        if book["id"] == book_id:
-            books.remove(book)
-            return {}
-
+@book_router.delete("/book/{book_uid}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_book(book_uid: str, session: AsyncSession = Depends(get_session)):
+    book = await book_service.delete_book(book_uid, session)
+    if book is not None:
+        return {}
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Book not found")
