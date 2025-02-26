@@ -3,10 +3,11 @@ from sqlmodel import select
 from src.database.models import User
 from .schemas import UserCreateModel
 from .utils import generate_password_hash
+from pydantic import EmailStr
 
 class UserService:
 
-    async def get_user_by_email(self, email: str, session: AsyncSession):
+    async def get_user_by_email(self, email: EmailStr, session: AsyncSession):
         statement = select(User).where(User.email == email)
 
         result = await session.exec(statement)
@@ -18,7 +19,7 @@ class UserService:
 
         return True if user else False
 
-    async def create_user(self, user_data: UserCreateModel, session: AsyncSession):
+    async def create_user(self, user_data: UserCreateModel, session: AsyncSession) -> User:
         user_data_dict = user_data.model_dump()
 
         new_user = User(**user_data_dict)

@@ -4,15 +4,6 @@ import uuid
 from datetime import datetime, date
 
 
-class BookCreateModel(SQLModel):
-    title: str
-    author: str
-    publisher: str
-    published_date: date
-    page_count: int
-    language: str
-
-
 class Book(SQLModel, table=True):
     __tablename__ = "books"
 
