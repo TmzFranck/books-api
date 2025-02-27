@@ -2,7 +2,7 @@ from fastapi.security import HTTPBearer
 from typing import Optional
 from fastapi import HTTPException, status, Request
 from .utils import decode_token
-
+from src.database.redis import token_in_blocklist
 
 class TokenBearer(HTTPBearer):
     def __init__(self, auto_error: bool =True):
@@ -14,6 +14,15 @@ class TokenBearer(HTTPBearer):
         assert creds
         token = creds.credentials
         token_data = decode_token(token)
+
+        assert token_data
+        if await token_in_blocklist(token_data["jti"]):
+            raise HTTPException(
+                            status_code=status.HTTP_403_FORBIDDEN, detail={
+                                "error":"This token is invalid or expired",
+                                "resolution":"Please get new token"
+                           }
+                        )
 
         if not self.token_valid(token):
             raise HTTPException(
