@@ -7,13 +7,16 @@ from fastapi.exceptions import HTTPException
 from .utils import verify_password, create_access_token
 from datetime import timedelta
 from fastapi.responses import JSONResponse
-from .dependencies import RefreshTokenBearer, AccessTokenBearer
+from .dependencies import (RefreshTokenBearer, AccessTokenBearer, get_current_active_user)
 from datetime import datetime
 from src.database.redis import add_jti_to_block_list
+from .schemas import UserBooksModel
+from .dependencies import RoleChecker
 
 auth_router = APIRouter()
 user_service = UserService()
 refresh_token_service = RefreshTokenBearer()
+role_checker = RoleChecker(["admin"])
 
 REFRESH_TOKEN_EXPIRY = 2
 
@@ -85,3 +88,7 @@ async def revoke_token(token_details: dict = Depends(AccessTokenBearer())):
     return JSONResponse(
         content={"message": "Logout successful"},
         status_code=status.HTTP_200_OK)
+
+@auth_router.get("/me", response_model=UserBooksModel)
+async def get_current_user(user=Depends(get_current_active_user), _:bool = Depends(role_checker)) -> UserBooksModel:
+    return user
