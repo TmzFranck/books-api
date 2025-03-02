@@ -1,12 +1,16 @@
 from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, status
-from fastapi.exceptions import HTTPException
 from fastapi.responses import JSONResponse
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from src.database.main import get_session
 from src.database.redis import add_jti_to_block_list
+from src.errors import (
+    InvalidCredentialsError,
+    InvalidTokenError,
+    UserAlreadyExistsError,
+)
 
 from .dependencies import (
     AccessTokenBearer,
@@ -37,10 +41,7 @@ async def create_user_account(
     user_exists = await user_service.user_exists(email, session)
 
     if user_exists:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="User with email already exists",
-        )
+        raise UserAlreadyExistsError()
     new_user = await user_service.create_user(user_data, session)
 
     return new_user
@@ -76,9 +77,7 @@ async def login_user(
                     "user": {"email": user.email, "uid": str(user.uid)},
                 }
             )
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Invalid Email or Password"
-        )
+    raise InvalidCredentialsError()
 
 
 @auth_router.post("/refresh_token")
@@ -90,9 +89,7 @@ async def get_new_access_token(token_details: dict = Depends(refresh_token_servi
 
         return JSONResponse(content={"access_token": new_access_token})
 
-    raise HTTPException(
-        status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid Or expired token"
-    )
+    raise InvalidTokenError()
 
 
 @auth_router.post("/logout")

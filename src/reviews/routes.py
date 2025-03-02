@@ -1,11 +1,12 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from src.auth.dependencies import RoleChecker, get_current_active_user
 from src.database.main import get_session
 from src.database.models import User
+from src.errors import ReviewNotFoundError
 
 from .schemas import ReviewCreateModel, ReviewModel
 from .service import ReviewService
@@ -31,9 +32,7 @@ async def get_all_reviews(session: AsyncSession = Depends(get_session)):
 async def get_review(review_uid: str, session: AsyncSession = Depends(get_session)):
     review = await review_service.get_review(review_uid, session)
     if not review:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Review not found"
-        )
+        raise ReviewNotFoundError()
     return review
 
 

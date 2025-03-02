@@ -1,17 +1,17 @@
-from fastapi import status
-from fastapi.exceptions import HTTPException
 from sqlmodel import desc, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from src.books.service import BookService
 from src.database.models import Tag
+from src.errors import (
+    BookNotFoundError,
+    TagAlreadyExistsError,
+    TagNotFoundError,
+)
 
 from .schemas import TagAddModel, TagCreateModel
 
 book_service = BookService()
-server_error = HTTPException(
-    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Something went wrong"
-)
 
 
 class TagService:
@@ -28,9 +28,7 @@ class TagService:
         book = await book_service.get_book(book_uid, session)
 
         if not book:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Book not found"
-            )
+            raise BookNotFoundError()
 
         for tag_item in tag_data.tags:
             statement = select(Tag).where(Tag.name == tag_item.name)
@@ -62,9 +60,7 @@ class TagService:
         tag = result.first()
 
         if tag:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN, detail="Tag already exists"
-            )
+            raise TagAlreadyExistsError()
 
         new_tag = Tag(**tag_data.model_dump())
 
@@ -78,9 +74,7 @@ class TagService:
         tag = await self.get_tag_by_uid(tag_uid, session)
 
         if not tag:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Tag not found"
-            )
+            raise TagNotFoundError
 
         update_tag_data_dict = tag_data.model_dump()
 
@@ -96,9 +90,7 @@ class TagService:
         tag = await self.get_tag_by_uid(tag_uid, session)
 
         if not tag:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Tag not found"
-            )
+            raise TagNotFoundError
 
         await session.delete(tag)
         await session.commit()
