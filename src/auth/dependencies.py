@@ -32,7 +32,9 @@ class TokenBearer(HTTPBearer):
         token = creds.credentials
         token_data = decode_token(token)
 
-        assert token_data
+        if token_data is None:
+            raise InvalidTokenError()
+
         if await token_in_blocklist(token_data["jti"]):
             raise InvalidTokenError()
 
