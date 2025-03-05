@@ -3,6 +3,8 @@ from datetime import datetime, timedelta
 from typing import Union
 
 import jwt
+from fastapi import HTTPException
+from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 from passlib.context import CryptContext
 
 from src.config import Config
@@ -42,3 +44,24 @@ def decode_token(token: str) -> Union[dict, None]:
         return token_data
     except Exception:
         return None
+
+
+serializer = URLSafeTimedSerializer(
+    secret_key=Config.JWT_SECRET, salt="email-verification"
+)
+
+
+def create_url_safe_token(data: dict, expiration=3600) -> str:
+    token = serializer.dumps(data)
+
+    return token
+
+
+def decode_url_safe_token(token: str) -> dict:
+    try:
+        token_data = serializer.loads(token)
+        return token_data
+    except SignatureExpired:
+        raise HTTPException(status_code=400, detail="Token has expired")
+    except BadSignature:
+        raise HTTPException(status_code=400, detail="Invalid token")

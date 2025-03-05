@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Any, List, Optional
 
 from fastapi import Depends, Request
 from fastapi.security import HTTPBearer
@@ -9,6 +9,7 @@ from src.database.models import User
 from src.database.redis import token_in_blocklist
 from src.errors import (
     AccessTokenError,
+    AccountNotVerifiedError,
     InsufficientPermissionsError,
     InvalidTokenError,
     RefreshTokenError,
@@ -25,7 +26,7 @@ class TokenBearer(HTTPBearer):
     def __init__(self, auto_error: bool = True):
         super().__init__(auto_error=auto_error)
 
-    async def __call__(self, request: Request) -> Optional[dict]:
+    async def __call__(self, request: Request) -> Any:
         creds = await super().__call__(request)
 
         assert creds
@@ -84,6 +85,8 @@ class RoleChecker:
         self.allowed_roles = allowed_roles
 
     def __call__(self, current_user: User = Depends(get_current_active_user)) -> bool:
+        if not current_user.is_verified:
+            raise AccountNotVerifiedError()
         if current_user.role in self.allowed_roles:
             return True
 

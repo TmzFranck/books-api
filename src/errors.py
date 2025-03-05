@@ -4,6 +4,9 @@ from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 
 
+class AccountNotVerifiedError(Exception): ...
+
+
 class BookError(Exception): ...
 
 
@@ -184,6 +187,18 @@ def register_error_handlers(app: FastAPI):
             initial_detail={
                 "message": "Review not found",
                 "error_code": "review_not_found",
+            },
+        ),
+    )
+
+    app.add_exception_handler(
+        AccountNotVerifiedError,
+        create_exception_handler(
+            status_code=status.HTTP_403_FORBIDDEN,
+            initial_detail={
+                "message": "Account Not Verified",
+                "error_code": "account_not_verified",
+                "resolution": "Please check your email for verification details",
             },
         ),
     )

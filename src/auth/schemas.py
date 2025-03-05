@@ -34,3 +34,16 @@ class UserLoginModel(BaseModel):
 
 class UserBooksModel(UserModel):
     books: List[BookModel]
+
+
+class EmailModel(BaseModel):
+    addresses: List[str]
+
+
+class PasswordResetRequestModel(BaseModel):
+    email: EmailStr
+
+
+class PasswordResetConfirmModel(BaseModel):
+    new_password: str
+    confirm_new_password: str
