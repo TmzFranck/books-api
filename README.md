@@ -4,7 +4,17 @@ A RESTful API for managing books and their metadata.
 
 ## Overview
 
-Books API provides a comprehensive platform for cataloging, searching, and managing book information. The API allows users to perform CRUD operations on books, authors, and related entities.
+Books API provides a comprehensive platform for managing a collection of books with the following features:
+
+- **Book Management**: Create, retrieve, update, and delete books
+- **User Authentication**: Secure signup, login, and token-based authentication
+- **Role-Based Access Control**: Different permissions for users and administrators
+- **Review System**: Allow users to post and manage reviews for books
+- **Tagging System**: Organize books with custom tags
+- **Background Processing**: Email notifications and other async tasks with Celery
+- **Token Management**: Secure logout with token blacklisting via Redis
+
+The API is built with FastAPI, providing automatic OpenAPI documentation, async request handling, and modern Python features.
 
 ## Getting Started
 
@@ -128,11 +138,20 @@ The API documentation is automatically generated and available at:
 
 ## Authentication
 
-The API uses token-based authentication. Include the token in the Authorization header:
+The API uses token-based authentication with role-based access control. Include the token in the Authorization header:
 
 ```
 Authorization: Token <your-token>
 ```
+
+### Roles and Permissions
+
+The application implements role-based access control with the following roles:
+
+- **Admin**: Full access to all endpoints and operations
+- **User**: Can manage their own books, post reviews, and use tags
+
+Endpoints are protected using role checker dependencies that verify the user has the appropriate permissions for the requested operation.
 
 ## Development
 
