@@ -1,10 +1,11 @@
 from datetime import datetime, timedelta
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from src.auth.utils import generate_password_hash
+from src.celery_tasks import send_email
 from src.config import Config
 from src.database.main import get_session
 from src.database.redis import add_jti_to_block_list
@@ -14,7 +15,6 @@ from src.errors import (
     UserAlreadyExistsError,
     UserNotFoundError,
 )
-from src.mail import create_message, mail
 
 from .dependencies import (
     AccessTokenBearer,
@@ -48,7 +48,9 @@ REFRESH_TOKEN_EXPIRY = 2
 
 @auth_router.post("/signup", status_code=status.HTTP_201_CREATED)
 async def create_user_account(
-    user_data: UserCreateModel, session: AsyncSession = Depends(get_session)
+    user_data: UserCreateModel,
+    bg_tasks: BackgroundTasks,
+    session: AsyncSession = Depends(get_session),
 ):
     email = user_data.email
 
@@ -66,12 +68,9 @@ async def create_user_account(
     <h1>Verify your Email</h1>
     <p>Please click this <a href="{link}">link</a> to verify your email</p>
     """
+    subject = "Verify your Email"
 
-    message = create_message(
-        recipients=[email], subject="Verify your Email", body=html_message
-    )
-
-    await mail.send_message(message)
+    send_email.delay([email], subject, html_message)
 
     return {
         "message": "Account Created! Check email to verify your account",
@@ -149,8 +148,7 @@ async def send_mail(emails: EmailModel):
     html = "<h1>Welcome to the App</h1>"
     subject = "Welcome to our app"
 
-    message = create_message(recipients=emails_addrs, subject=subject, body=html)
-    await mail.send_message(message)
+    send_email.delay(emails_addrs, subject, html)
 
     return {"message": "Email sent successfully"}
 
@@ -195,9 +193,7 @@ async def password_reset_request(email_data: PasswordResetRequestModel):
 
     subject = "Reset your Password"
 
-    message = create_message(recipients=[email], subject=subject, body=html_message)
-
-    await mail.send_message(message)
+    send_email.delay([email], subject, html_message)
 
     return JSONResponse(
         content={

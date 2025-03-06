@@ -19,9 +19,13 @@ class Settings(BaseSettings):
     USE_CREDENTIALS: bool = True
     VALIDATE_CERTS: bool = True
     DOMAIN: str = ""
+    REDIS_URL: str = "redis://localhost:6379/0"
     model_config = SettingsConfigDict(
         env_file="./.env", env_file_encoding="utf-8", extra="ignore"
     )
 
 
 Config = Settings()
+broker_url = Config.REDIS_URL
+result_backend = Config.REDIS_URL
+broker_connection_retry_on_startup = True
