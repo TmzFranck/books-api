@@ -181,6 +181,18 @@ This project uses Celery for handling background tasks like sending emails and p
 - **Flower**: Web-based monitoring tool for Celery tasks (available at http://localhost:5555)
 - **Redis**: Used as a message broker and for token blacklisting
 
+### Email Testing with MailMung
+
+For development purposes, the application is configured to use MailMung, an online service for email testing that captures and displays emails without actually sending them to real recipients.
+
+To use MailMung:
+
+1. Sign up for a free MailMung account at https://mailmug.net
+2. Configure your login information in the `.env` file
+3. All emails sent by the application will be viewable in your MailMung dashboard
+
+> Note: MailMung is for development only. Configure a real email service provider for production.
+
 ### Redis
 
 Redis serves two primary functions in this project:
