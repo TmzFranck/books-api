@@ -141,7 +141,7 @@ The API documentation is automatically generated and available at:
 The API uses token-based authentication with role-based access control. Include the token in the Authorization header:
 
 ```
-Authorization: Token <your-token>
+Authorization: Bearer <your-token>
 ```
 
 ### Roles and Permissions
