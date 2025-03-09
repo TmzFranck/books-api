@@ -12,7 +12,16 @@ from src.tags.routes import tags_router
 from .middleware import register_middleware
 
 version = "v1"
+version_prefix ="/api/{version}"
 
+description = """
+A REST API for a book review web service.
+
+This REST API is able to;
+- Create Read Update And delete books
+- Add reviews to books
+- Add tags to Books e.t.c.
+"""
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -23,14 +32,23 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Books API",
-    description="A RESTful API for a book review web service",
+    description=description,
     version=version,
+    license_info={"name": "MIT License", "url": "https://opensource.org/license/mit"},
+    contact={
+            "name": "Franck Boudouin Tameze",
+            "url": "https://github.com/TmzFranck",
+            "email": "francktameze5@gmail.com",
+        },
+    openapi_url=f"{version_prefix}/openapi.json",
+    docs_url=f"{version_prefix}/docs",
+    redoc_url=f"{version_prefix}/redoc"
 )
 
 register_error_handlers(app)
 register_middleware(app)
 
-app.include_router(book_router, prefix=f"/api/{version}/books", tags=["books"])
-app.include_router(auth_router, prefix=f"/api/{version}/auth", tags=["auth"])
-app.include_router(review_router, prefix=f"/api/{version}/reviews", tags=["reviews"])
-app.include_router(tags_router, prefix=f"/api/{version}/tags", tags=["tags"])
+app.include_router(book_router, prefix=f"/{version_prefix}/books", tags=["books"])
+app.include_router(auth_router, prefix=f"/{version_prefix}/auth", tags=["auth"])
+app.include_router(review_router, prefix=f"/{version_prefix}/reviews", tags=["reviews"])
+app.include_router(tags_router, prefix=f"/{version_prefix}/tags", tags=["tags"])
