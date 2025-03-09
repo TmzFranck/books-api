@@ -1,4 +1,42 @@
 services:
+  web:
+    build: .
+    volumes:
+      - .:/app
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ALGORITHM: ${JWT_ALGORITHM}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      MAIL_SERVER: ${MAIL_SERVER}
+      MAIL_PORT: ${MAIL_PORT}
+      MAIL_FROM: ${MAIL_FROM}
+      MAIL_FROM_NAME: ${MAIL_FROM_NAME}
+      DOMAIN: ${DOMAIN}
+      REDIS_URL: ${REDIS_URL}
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+    networks:
+      - app-network
+
+  db:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=book
+      - POSTGRES_PASSWORD=testpass
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
   redis:
     container_name: redis
     image: redis:latest
@@ -8,6 +46,39 @@ services:
     volumes:
       - redis_data:/data
     command: ["redis-server", "--save", "60", "1", "--loglevel", "warning"]
+    networks:
+      - app-network
+
+  celery:
+    build: .
+    command: celery -A src.celery_tasks.c_app worker --loglevel=INFO
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+    environment:
+      REDIS_URL: ${REDIS_URL}
+    networks:
+      - app-network
+
+  flower:
+    build: .
+    command: celery -A src.celery_tasks.c_app flower --port=5555
+    ports:
+      - "5555:5555"
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+    environment:
+      REDIS_URL: ${REDIS_URL}
+    networks:
+      - app-network
 
 volumes:
+  db-data:
   redis_data:
+
+networks:
+  app-network:
+    driver: bridge
