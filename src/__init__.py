@@ -36,7 +36,7 @@ app = FastAPI(
     version=version,
     license_info={"name": "MIT License", "url": "https://opensource.org/license/mit"},
     contact={
-            "name": "Franck Boudouin Tameze",
+            "name": "Franck Tameze",
             "url": "https://github.com/TmzFranck",
             "email": "francktameze5@gmail.com",
         },
@@ -48,7 +48,7 @@ app = FastAPI(
 register_error_handlers(app)
 register_middleware(app)
 
-app.include_router(book_router, prefix=f"/{version_prefix}/books", tags=["books"])
-app.include_router(auth_router, prefix=f"/{version_prefix}/auth", tags=["auth"])
-app.include_router(review_router, prefix=f"/{version_prefix}/reviews", tags=["reviews"])
-app.include_router(tags_router, prefix=f"/{version_prefix}/tags", tags=["tags"])
+app.include_router(book_router, prefix=f"{version_prefix}/books", tags=["books"])
+app.include_router(auth_router, prefix=f"{version_prefix}/auth", tags=["auth"])
+app.include_router(review_router, prefix=f"{version_prefix}/reviews", tags=["reviews"])
+app.include_router(tags_router, prefix=f"{version_prefix}/tags", tags=["tags"])

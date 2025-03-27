@@ -49,7 +49,6 @@ REFRESH_TOKEN_EXPIRY = 2
 @auth_router.post("/signup", status_code=status.HTTP_201_CREATED)
 async def create_user_account(
     user_data: UserCreateModel,
-    bg_tasks: BackgroundTasks,
     session: AsyncSession = Depends(get_session),
 ):
     email = user_data.email
