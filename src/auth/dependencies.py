@@ -1,4 +1,5 @@
 from typing import Any, List, Optional
+from abc import abstractmethod
 
 from fastapi import Depends, Request
 from fastapi.security import HTTPBearer
@@ -51,8 +52,8 @@ class TokenBearer(HTTPBearer):
 
         return token_data is not None
 
-    def verify_token_data(self, token_data):
-        raise NotImplementedError("Please Override this method in child classes")
+    @abstractmethod
+    def verify_token_data(self, token_data): ...
 
 
 class AccessTokenBearer(TokenBearer):

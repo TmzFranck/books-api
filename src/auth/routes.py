@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -9,34 +9,17 @@ from src.celery_tasks import send_email
 from src.config import Config
 from src.database.main import get_session
 from src.database.redis import add_jti_to_block_list
-from src.errors import (
-    InvalidCredentialsError,
-    InvalidTokenError,
-    UserAlreadyExistsError,
-    UserNotFoundError,
-)
+from src.errors import (InvalidCredentialsError, InvalidTokenError,
+                        UserAlreadyExistsError, UserNotFoundError)
 
-from .dependencies import (
-    AccessTokenBearer,
-    RefreshTokenBearer,
-    RoleChecker,
-    get_current_active_user,
-)
-from .schemas import (
-    EmailModel,
-    PasswordResetConfirmModel,
-    PasswordResetRequestModel,
-    UserBooksModel,
-    UserCreateModel,
-    UserLoginModel,
-)
+from .dependencies import (AccessTokenBearer, RefreshTokenBearer, RoleChecker,
+                           get_current_active_user)
+from .schemas import (EmailModel, PasswordResetConfirmModel,
+                      PasswordResetRequestModel, UserBooksModel,
+                      UserCreateModel, UserLoginModel)
 from .service import UserService
-from .utils import (
-    create_access_token,
-    create_url_safe_token,
-    decode_url_safe_token,
-    verify_password,
-)
+from .utils import (create_access_token, create_url_safe_token,
+                    decode_url_safe_token, verify_password)
 
 auth_router = APIRouter()
 user_service = UserService()
