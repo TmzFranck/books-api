@@ -12,7 +12,7 @@ from src.tags.routes import tags_router
 from .middleware import register_middleware
 
 version = "v1"
-version_prefix ="/api/{version}"
+version_prefix = "/api/{version}"
 
 description = """
 A REST API for a book review web service.
@@ -22,6 +22,7 @@ This REST API is able to;
 - Add reviews to books
 - Add tags to Books e.t.c.
 """
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -36,13 +37,13 @@ app = FastAPI(
     version=version,
     license_info={"name": "MIT License", "url": "https://opensource.org/license/mit"},
     contact={
-            "name": "Franck Tameze",
-            "url": "https://github.com/TmzFranck",
-            "email": "francktameze5@gmail.com",
-        },
+        "name": "Franck Tameze",
+        "url": "https://github.com/TmzFranck",
+        "email": "francktameze5@gmail.com",
+    },
     openapi_url=f"{version_prefix}/openapi.json",
     docs_url=f"{version_prefix}/docs",
-    redoc_url=f"{version_prefix}/redoc"
+    redoc_url=f"{version_prefix}/redoc",
 )
 
 register_error_handlers(app)
