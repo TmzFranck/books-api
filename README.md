@@ -221,9 +221,27 @@ TTL blacklisted_tokens:<token_jti>
 
 ### Testing
 
-**Coming Soon**
+This project uses [pytest](https://docs.pytest.org/) for testing, along with FastAPI's TestClient and unittest.mock for mocking dependencies.
 
-Testing functionality is currently under development and will be available in a future update. The test suite will include unit tests, integration tests to ensure the API functions correctly.
+To run the test suite:
+
+```
+# (Optional) Activate your virtual environment
+source .venv/bin/activate
+
+# Install test dependencies if not already installed
+pip install -r requirements.txt
+
+# Run all tests
+pytest
+```
+
+#### Notes
+
+- Tests are located in the `tests/` directory and cover authentication, books, reviews, and tags endpoints.
+- Some tests use dependency overrides and mocks for database and Redis interactions.
+- Ensure your environment variables are set up (see `.env.example`).
+- For best results, run tests in an isolated environment.
 
 ### Code Style
 
