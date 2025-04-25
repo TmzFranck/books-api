@@ -67,4 +67,58 @@ def mock_get_tags_success(monkeypatch):
     yield
 
 
-# Ajoute d'autres tests pour POST, PUT, DELETE, erreurs, etc.
+def test_create_tag_authenticated(auth_token, monkeypatch):
+    class FakeTag:
+        pass
+
+    monkeypatch.setattr(
+        "src.tags.service.TagService.create_tag", AsyncMock(return_value=FakeTag())
+    )
+    resp = client.post(
+        "/api/v1/tags/",
+        json={"name": "TestTag"},
+        headers={"Authorization": f"Bearer {auth_token}"},
+    )
+    assert resp.status_code in (201, 409, 404)
+
+
+def test_update_tag_authenticated(auth_token, monkeypatch):
+    class FakeTag:
+        pass
+
+    monkeypatch.setattr(
+        "src.tags.service.TagService.update_tag", AsyncMock(return_value=FakeTag())
+    )
+    resp = client.put(
+        "/api/v1/tags/fake-tag-uid",
+        json={"name": "UpdatedTag"},
+        headers={"Authorization": f"Bearer {auth_token}"},
+    )
+    assert resp.status_code in (200, 404)
+
+
+def test_delete_tag_authenticated(auth_token, monkeypatch):
+    monkeypatch.setattr(
+        "src.tags.service.TagService.delete_tag", AsyncMock(return_value=True)
+    )
+    resp = client.delete(
+        "/api/v1/tags/fake-tag-uid",
+        headers={"Authorization": f"Bearer {auth_token}"},
+    )
+    assert resp.status_code in (204, 404)
+
+
+def test_add_tag_to_book_authenticated(auth_token, monkeypatch):
+    class FakeBook:
+        pass
+
+    monkeypatch.setattr(
+        "src.tags.service.TagService.add_tag_to_book",
+        AsyncMock(return_value=FakeBook()),
+    )
+    resp = client.post(
+        "/api/v1/tags/book/fake-book-uid/tags",
+        json={"name": "TestTag"},
+        headers={"Authorization": f"Bearer {auth_token}"},
+    )
+    assert resp.status_code in (200, 404)

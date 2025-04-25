@@ -69,4 +69,44 @@ def mock_get_reviews_success(monkeypatch):
     yield
 
 
-# Ajoute d'autres tests pour GET by id, POST, DELETE, erreurs, etc.
+def test_get_review_by_id_authenticated(auth_token, monkeypatch):
+    class FakeReview:
+        pass
+
+    monkeypatch.setattr(
+        "src.reviews.service.ReviewService.get_review",
+        AsyncMock(return_value=FakeReview()),
+    )
+    resp = client.get(
+        "/api/v1/reviews/fake-review-uid",
+        headers={"Authorization": f"Bearer {auth_token}"},
+    )
+    assert resp.status_code in (200, 404)
+
+
+def test_create_review_authenticated(auth_token, monkeypatch):
+    class FakeReview:
+        pass
+
+    monkeypatch.setattr(
+        "src.reviews.service.ReviewService.add_review_to_book",
+        AsyncMock(return_value=FakeReview()),
+    )
+    resp = client.post(
+        "/api/v1/reviews/book/fake-book-uid",
+        json={"content": "Great!", "rating": 5},
+        headers={"Authorization": f"Bearer {auth_token}"},
+    )
+    assert resp.status_code in (200, 201, 404)
+
+
+def test_delete_review_authenticated(auth_token, monkeypatch):
+    monkeypatch.setattr(
+        "src.reviews.service.ReviewService.delete_review_to_form_book",
+        AsyncMock(return_value=True),
+    )
+    resp = client.delete(
+        "/api/v1/reviews/fake-review-uid",
+        headers={"Authorization": f"Bearer {auth_token}"},
+    )
+    assert resp.status_code in (204, 404)

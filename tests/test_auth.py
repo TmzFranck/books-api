@@ -41,6 +41,3 @@ def test_signup(user_data):
     resp = client.post("/api/v1/auth/signup", json=user_data)
     print(resp.status_code, resp.text)
     assert resp.status_code in (201, 400, 409, 422)
-
-
-# Les autres tests peuvent rester, ils utiliseront les mocks automatiquement

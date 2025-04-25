@@ -72,6 +72,57 @@ def test_create_book(auth_token):
     assert resp.status_code in (201, 400, 404, 422)
 
 
+def test_get_book_by_id_authenticated(auth_token, monkeypatch):
+    class FakeBook:
+        def model_dump(self):
+            return {"title": "Test Book"}
+
+    monkeypatch.setattr(
+        "src.books.service.BookService.get_book", AsyncMock(return_value=FakeBook())
+    )
+    resp = client.get(
+        "/api/v1/books/fake-book-uid", headers={"Authorization": f"Bearer {auth_token}"}
+    )
+    assert resp.status_code in (200, 404)
+
+
+def test_update_book_authenticated(auth_token, monkeypatch):
+    class FakeBook:
+        def model_dump(self):
+            return {"title": "Updated Book"}
+
+    monkeypatch.setattr(
+        "src.books.service.BookService.update_book", AsyncMock(return_value=FakeBook())
+    )
+    resp = client.patch(
+        "/api/v1/books/fake-book-uid",
+        json={"title": "Updated Book"},
+        headers={"Authorization": f"Bearer {auth_token}"},
+    )
+    assert resp.status_code in (200, 404)
+
+
+def test_delete_book_authenticated(auth_token, monkeypatch):
+    monkeypatch.setattr(
+        "src.books.service.BookService.delete_book", AsyncMock(return_value=True)
+    )
+    resp = client.delete(
+        "/api/v1/books/fake-book-uid",
+        headers={"Authorization": f"Bearer {auth_token}"},
+    )
+    assert resp.status_code in (204, 404)
+
+
+def test_get_user_books_authenticated(auth_token, monkeypatch):
+    monkeypatch.setattr(
+        "src.books.service.BookService.get_user_books", AsyncMock(return_value=[])
+    )
+    resp = client.get(
+        "/api/v1/books/user/fake-user-uid",
+        headers={"Authorization": f"Bearer {auth_token}"},
+    )
+    assert resp.status_code in (200, 404)
+
 
 @pytest.fixture(autouse=True, scope="function")
 def mock_create_book_success(monkeypatch):
@@ -93,6 +144,3 @@ def mock_create_book_success(monkeypatch):
 
     monkeypatch.setattr(BookService, "create_book", AsyncMock(return_value=FakeBook()))
     yield
-
-
-# Ajoute d'autres tests pour GET by id, PATCH, DELETE, GET user books, erreurs, etc.
