@@ -5,7 +5,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     DATABASE_URL: str = ""
     JWT_SECRET: str = ""
-    JWT_ALGORITHM: str = ""
+    JWT_ALGORITHM: str = "HS256"
     REDIS_HOST: str = ""
     REDIS_PORT: int = 0
     MAIL_USERNAME: str = ""
